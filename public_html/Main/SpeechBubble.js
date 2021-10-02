@@ -57,7 +57,6 @@ class SpeechBubble {
 
 		this.mesh.material.map.needsUpdate = true;
 	}
-	
 
 	createOffscreenCanvas(w, h) {
 		const canvas = document.createElement('canvas');
@@ -97,7 +96,7 @@ class SpeechBubble {
 
 	show(pos) {
 		if (this.mesh !== undefined && this.player !== undefined) {
-			this.mesh.position.set(this.player.object.position.x, this.player.object.position.y + 380, this.player.object.position.z);
+			this.mesh.position.set(this.player.object.position.x, this.player.object.position.y + 310, this.player.object.position.z);
 			this.mesh.lookAt(pos);
 		}
 	}

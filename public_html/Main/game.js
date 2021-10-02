@@ -160,10 +160,12 @@ class Game {
 		const loader = new THREE.FBXLoader();
 		this.loadEnvironment(loader);
 
-		this.speechBubble = new SpeechBubble(this, "", 150);
-		this.speechBubble.mesh.position.set(0, 350, 0);
+		// this.speechBubble = new SpeechBubble(this, "", 150);
+		// this.speechBubble.mesh.position.set(0, 350, 0);
 
-		
+		this.nickname = new Nickname(this, "");
+		this.nickname.mesh.position.set(0, 350, 0);
+
 
 		this.joystick = new JoyStick({
 			onMove: this.playerControl,
@@ -543,6 +545,19 @@ class Game {
 
 		});
 
+		// const chat = document.getElementById('chat');
+		// chat.style.bottom = '0px';
+		
+		
+		// $('#msg-form [name="send"]').click( () =>{
+		// 	const chatchat = document.getElementById('msg-form').value;
+		// 	console.log(chatchat)
+		// 	this.speechBubble.update(chatchat);
+		// 	this.scene.add(this.speechBubble.mesh);
+		// })
+
+
+
 		if ('ontouchstart' in window) {
 			window.addEventListener('touchdown', (event) => game.onMouseDown(event), false);
 		} else {
@@ -679,12 +694,12 @@ class Game {
 
 		this.remoteData.forEach(function (data) {//원격데이터배열 foreach문 돌린다 // 배열의 각요소는 function(data) <- data가 된다
 			if (game.player.id != data.id) {
-				//Is this player being initialised?
+				//이 플레이어가 초기화되고 있습니까?
 				let iplayer;
 				game.initialisingPlayers.forEach(function (player) {
 					if (player.id == data.id) iplayer = player;
 				});
-				//If not being initialised check the remotePlayers array
+				//초기화되지 않은 경우 remotePlayers 어레이 확인
 				if (iplayer === undefined) {
 					let rplayer;
 					game.remotePlayers.forEach(function (player) {
@@ -714,50 +729,69 @@ class Game {
 	}
 
 	onMouseDown(event) {
-		if (this.remoteColliders === undefined || this.remoteColliders.length == 0 || this.speechBubble === undefined || this.speechBubble.mesh === undefined) return;
+		//if (this.remoteColliders === undefined || this.remoteColliders.length == 0 || this.speechBubble === undefined || this.speechBubble.mesh === undefined) return;
 
 		// calculate mouse position in normalized device coordinates
 		// (-1 to +1) for both components
-		const mouse = new THREE.Vector2();
-		mouse.x = (event.clientX / this.renderer.domElement.clientWidth) * 2 - 1;
-		mouse.y = - (event.clientY / this.renderer.domElement.clientHeight) * 2 + 1;
+		//const mouse = new THREE.Vector2();
+		//mouse.x = (event.clientX / this.renderer.domElement.clientWidth) * 2 - 1;
+		//mouse.y = - (event.clientY / this.renderer.domElement.clientHeight) * 2 + 1;
 
-		const raycaster = new THREE.Raycaster();
-		raycaster.setFromCamera(mouse, this.camera);//방금 계산한 마우스갖ㅅ을 카메라에 전달
+		//const raycaster = new THREE.Raycaster();
+		//raycaster.setFromCamera(mouse, this.camera);//방금 계산한 마우스갖ㅅ을 카메라에 전달
 
-		const intersects = raycaster.intersectObjects(this.remoteColliders);// 콜라이더 배열에 있는 교차되는 객체 모두 확인
-		const chat = document.getElementById('chat');
+		//const intersects = raycaster.intersectObjects(this.remoteColliders);// 콜라이더 배열에 있는 교차되는 객체 모두 확인
+		const m = document.getElementById('m');
+		if (m.value != "")
+		{
+			const chat = document.getElementById('chat');
+			//const players = this.remotePlayers;
+			//console.log(this.remotePlayers)
+			// for(i=0; i<=players.length; i++){
+			// 	this.speechBubble.player =  players[i];
+			// }
+			this.nickname.player = this.player;
+			//this.chatSocketId = this.player.id;
+			this.nickname.update(m.value);
+			this.scene.add(this.nickname.mesh);//말풍성메쉬 추가
+			//chat.style.bottom = '0px';
 
-		if (intersects.length > 0) {
-			const object = intersects[0].object;
-			const players = this.remotePlayers.filter(function (player) {//filter사용하여 방금 교차한 객체의 위치를 찾는다
-				if (player.collider !== undefined && player.collider == object) {
-					return true;
-				}
-			});
-			if (players.length > 0) {//플레이어 선택시 나타나는 효과 코드
-				const player = players[0];//실제 플레이어가 배열의 첫번째요소
-				console.log(`onMouseDown: player ${player.id}`);
-				this.speechBubble.player = player;
-				this.speechBubble.update('');
-				this.scene.add(this.speechBubble.mesh);//말풍성메쉬 추가
-				this.chatSocketId = player.id;
-				chat.style.bottom = '0px';
-				this.activeCamera = this.cameras.chat;
-			}
-		} else {
-			//Is the chat panel visible?
-			if (chat.style.bottom == '0px' && (window.innerHeight - event.clientY) > 40) {
-				console.log("onMouseDown: No player found");
-				if (this.speechBubble.mesh.parent !== null) this.speechBubble.mesh.parent.remove(this.speechBubble.mesh);
-				delete this.speechBubble.player;
-				delete this.chatSocketId;
-				chat.style.bottom = '-50px';//화면의 아래쪽으로 보냄
-				this.activeCamera = this.cameras.back;//활성카메라를 기본값으로 돌림
-			} else {
-				console.log("onMouseDown: typing");
-			}
+			
 		}
+
+
+		// if (intersects.length > 0) {
+		// 	const object = intersects[0].object;
+		// 	const players = this.remotePlayers.filter(function (player) {//filter사용하여 방금 교차한 객체의 위치를 찾는다
+		// 		if (player.collider !== undefined && player.collider == object) {
+		// 			return true;
+		// 		}
+		// 	});
+
+
+			// if (players.length > 0) {//플레이어 선택시 나타나는 효과 코드
+			// 	const player = players[0];//실제 플레이어가 배열의 첫번째요소
+			// 	console.log(`onMouseDown: player ${player.id}`);
+			// 	this.speechBubble.player = player;
+			// 	this.speechBubble.update('');
+			// 	this.scene.add(this.speechBubble.mesh);//말풍성메쉬 추가
+			// 	this.chatSocketId = player.id;
+			// 	chat.style.bottom = '0px';
+			// 	this.activeCamera = this.cameras.chat;
+			// }
+		// } else {
+		// 	//Is the chat panel visible?
+		// 	if (chat.style.bottom == '0px' && (window.innerHeight - event.clientY) > 40) {
+		// 		console.log("onMouseDown: No player found");
+		// 		if (this.speechBubble.mesh.parent !== null) this.speechBubble.mesh.parent.remove(this.speechBubble.mesh);
+		// 		delete this.speechBubble.player;
+		// 		delete this.chatSocketId;
+		// 		chat.style.bottom = '-50px';//화면의 아래쪽으로 보냄
+		// 		this.activeCamera = this.cameras.back;//활성카메라를 기본값으로 돌림
+		// 	} else {
+		// 		console.log("onMouseDown: typing");
+		// 	}
+		// }
 	}
 
 	getRemotePlayerById(id) {
@@ -774,30 +808,30 @@ class Game {
 
 	
 
-	addLabel( name, pos ) {
+	// addLabel( name, pos ) {
 
-		// if(this.textMesh !== undefined && this.player !== undefined){
-		//    this.textMesh.position.set(this.player.object.position.x, this.player.object.position.y + 300, this.player.object.position.z);
-		//    this.textMesh.lookAt(pos)
-		// }
-		let fontLoader = new THREE.FontLoader();
-		fontLoader.load(`${this.assetsPath}font/Yanolja Yache R_Regular.json`, (font) => {
-			let textGeo = new THREE.TextGeometry(name,
-				{ 
-					font: font,
-					size: 50,
-					height: 0,
-					curveSegments: 12
-				}
-			);
+	// 	// if(this.textMesh !== undefined && this.player !== undefined){
+	// 	//    this.textMesh.position.set(this.player.object.position.x, this.player.object.position.y + 300, this.player.object.position.z);
+	// 	//    this.textMesh.lookAt(pos)
+	// 	// }
+	// 	let fontLoader = new THREE.FontLoader();
+	// 	fontLoader.load(`${this.assetsPath}font/Yanolja Yache R_Regular.json`, (font) => {
+	// 		let textGeo = new THREE.TextGeometry(name,
+	// 			{ 
+	// 				font: font,
+	// 				size: 50,
+	// 				height: 0,
+	// 				curveSegments: 12
+	// 			}
+	// 		);
 
-		const textMaterial = new THREE.MeshBasicMaterial( { color: 0xFF00FF } );
-		this.textMesh = new THREE.Mesh( textGeo, textMaterial );
-		this.textMesh.position.copy(pos);
-		this.textMesh.rotation.y = Math.PI / 1;
-		this.scene.add( this.textMesh );
-		})
-	}
+	// 	const textMaterial = new THREE.MeshBasicMaterial( { color: 0xFF00FF } );
+	// 	this.textMesh = new THREE.Mesh( textGeo, textMaterial );
+	// 	this.textMesh.position.copy(pos);
+	// 	this.textMesh.rotation.y = Math.PI / 1;
+	// 	this.scene.add( this.textMesh );
+	// 	})
+	// }
 
 	animate() {
 		const game = this;
@@ -839,32 +873,25 @@ class Game {
 			this.sun.position.y += 10;
 		}
 
-		const onOK = null;
-		var name = '';
-		// var position1 = new THREE.Vector3();
-		// this.camera.position.copy(position1);
-		// console.log(position1)
-		//var position1 = new THREE.Vector3(this.player.object.position.x, this.player.object.position.y, this.player.object.position.z);
+		// const onOK = null;
+		// var name = '';
 		
-		const btn = document.getElementById('nick-button');
-		const panel = document.getElementById('nickname');
-		if (onOK != null) {
-			btn.onclick = function () {
-				panel.style.display = 'block';
-			}
-		} else {
-			btn.onclick = function () {
-				panel.style.display = 'none'; //안보이게됨
-				name = document.getElementById('nick-m').value;
-				game.addLabel(name, new THREE.Vector3(game.camera.position.x, game.camera.position.y, game.camera.position.z+200));
-			}
-		}
+		// const btn = document.getElementById('nick-button');
+		// const panel = document.getElementById('nickname');
+		// if (onOK != null) {
+		// 	btn.onclick = function () {
+		// 		panel.style.display = 'block';
+		// 	}
+		// } else {
+		// 	btn.onclick = function () {
+		// 		panel.style.display = 'none'; //안보이게됨
+		// 		name = document.getElementById('nick-m').value;
+		// 		game.addLabel(name, new THREE.Vector3(game.camera.position.x, game.camera.position.y, game.camera.position.z+200));
+		// 	}
+		// }
 		
-		//if (this.textMesh !== undefined) addLabel(this.camera.position);
 		
-		//textMesh.position.copy(game.camera.position);
-		
-		if (this.speechBubble !== undefined) this.speechBubble.show(this.camera.position);
+		if (this.nickname !== undefined) this.nickname.show(this.camera.position);
 		this.renderer.render(this.scene, this.camera);
 	}
 

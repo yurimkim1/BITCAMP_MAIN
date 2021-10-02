@@ -4,6 +4,15 @@ class PlayerLocal extends Player {// 로컬플레이어에만 적용되는 소�
 
 		const player = this;
 		const socket = io.connect();//서버에서 소켓 처음 생성
+
+		// socket.emit('nickname', function(data){
+		// 	data.id = game.player;
+		// 	data.message = game.speechBubble.mesh;
+		// 	socket.on('nickname', function (data){
+
+		// 	})
+		// })
+
 		socket.on('setId', function (data) {//클라이어트 소켓으로 다시 돌아감
 			player.id = data.id;
 		});
@@ -32,21 +41,32 @@ class PlayerLocal extends Player {// 로컬플레이어에만 적용되는 소�
 			}
 		});
 
-		socket.on('chat message', function (data) {//서버에서온 채팅메세지 수신에 응답
-			document.getElementById('chat').style.bottom = '0px';
-			const player = game.getRemotePlayerById(data.id);//해당 원격플레이어를 id를 사용하여 해당 플레이어로 가져옴
-			game.speechBubble.player = player;//말풍선플레이어속성에 이 특정플레이어에게 다음과 같이 말함
-			game.chatSocketId = player.id;//우리가 말하는 사람
-			game.activeCamera = game.cameras.chat;
-			game.speechBubble.update(data.message);//메세지로 말풍성업뎃
+		// socket.on('chat message', function (data) {//서버에서온 채팅메세지 수신에 응답
+		// 	document.getElementById('chat').style.bottom = '0px';
+		// 	//const player = game.getRemotePlayerById(data.id);//해당 원격플레이어를 id를 사용하여 해당 플레이어로 가져옴
+		// 	//game.speechBubble.player = player;//말풍선플레이어속성에 이 특정플레이어에게 다음과 같이 말함
+		// 	//game.chatSocketId = player.id;//우리가 말하는 사람
+		// 	//game.activeCamera = game.cameras.chat;
+		// 	game.speechBubble.update(data.message);//메세지로 말풍성업뎃
+		// });원본
+		
+		//네번째
+		socket.on('chat-message',function(data){
+				const player = game.getRemotePlayerById(data.id); //메세지보낸 사람 id
+				game.nickname.player = player;
+				//game.chatSocketId = player.id;//우리가 말하는 사람
+				console.log(`서버에서온 메세지 : ${data.id}님이 ${data.message}`);
+				game.nickname.update(data.message);
+				game.scene.add(game.nickname.mesh);//말풍성메쉬 추가
 		});
 
-		$('#msg-form').submit(function (e) {//화면에 채팅양싯이 있고 
-			socket.emit('chat message', { id: game.chatSocketId, message: $('#m').val() });//chatSocketId와 메세지자체가 전달
+		//첫번째
+		$('#msg-form').submit(function (e) {//화면에 채팅양싯이 있고
+			e.preventDefault();
+			socket.emit('chat message', { id: game.player.id, message: $('#m').val() });//chatSocketId와 메세지자체가 전달
 			$('#m').val('');//메세지 입력상자 지우기
-			return false;//리턴 false하면 페이지를 새로고침 하지 않음 클라이언트에게 보냄
+			return false;//리턴 false하면 페이지를 새로고침 하지 않음 /  클라이언트에게 보냄
 		});
-
 		this.socket = socket;
 	}
 
@@ -59,7 +79,8 @@ class PlayerLocal extends Player {// 로컬플레이어에만 적용되는 소�
 			y: this.object.position.y,
 			z: this.object.position.z,
 			h: this.object.rotation.y,
-			pb: this.object.rotation.x
+			pb: this.object.rotation.x,
+			message: $('#m').val()
 		});
 	}
 
